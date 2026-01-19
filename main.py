@@ -1,4 +1,5 @@
-import matplotlib as mpl
+import matplotlib.pyplot as mpl
+import numpy as np
 import algorithms
 
 def main():
