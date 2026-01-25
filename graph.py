@@ -27,6 +27,8 @@ class Graph():
         self.is_sorting = False
         self.start_time = 0
         self.elapsed_time = 0
+        self.compare = 0
+        self.swaps = 0
 
     def DrawBars(self):
         num_bars = len(Bar.bars)
@@ -70,6 +72,8 @@ class Graph():
                         self.sorting_algorithm_generator = self.sorting_algorithm()
                         self.start_time = time.time()
                         self.elapsed_time = 0
+                        self.compare = 0
+                        self.swaps = 0
                     elif event.key == pygame.K_UP and not self.is_sorting:
                         self.num_values += self.VALUES_STEP
                         if self.num_values > self.MAX_VALUES:
@@ -85,27 +89,20 @@ class Graph():
             self.__window.fill(Color.BLACK)
             font = pygame.font.SysFont('Comic Sans MS', 30)
             
-            
             xaxis = pygame.draw.rect(self.__window, Color.WHITE, (self.xaxis_x, self.xaxis_y, self.xaxis_width, 2))
 
-            if self.is_sorting:
-                try:
-                    self.current_bar = next(self.sorting_algorithm_generator)
+            try:
+                if self.is_sorting:
+                    self.current_bar, self.compare, self.swaps = next(self.sorting_algorithm_generator)
                     self.is_sorting = True
-                    text_surface = font.render(f"{self.sorting_algorithm.__name__} - Time elapsed:  {self.elapsed_time:.2f}s", True, Color.WHITE)
-                    self.__window.blit(text_surface, dest=(20, self.WINDOW_HEIGHT - 50))
                     self.elapsed_time = time.time() - self.start_time
-                except StopIteration:
-                    self.current_bar = None
-                    self.is_sorting = False
-                    self.sorting_algorithm_generator = None
-                    self.start_time = 0
-            elif not self.is_sorting and self.elapsed_time > 0:
-                text_surface = font.render(f"{self.sorting_algorithm.__name__} - Time elapsed:  {self.elapsed_time:.2f}s", True, Color.WHITE)
-                self.__window.blit(text_surface, dest=(20, self.WINDOW_HEIGHT - 50))
-            else:
-                text_surface = font.render(f"{self.sorting_algorithm.__name__}", True, Color.WHITE)
-                self.__window.blit(text_surface, dest=(20, self.WINDOW_HEIGHT - 50))
+            except StopIteration:
+                self.current_bar = None
+                self.is_sorting = False
+                self.sorting_algorithm_generator = None
+            text_surface = font.render(f"{self.sorting_algorithm.__name__} - Time elapsed:  {self.elapsed_time:.2f}s, Comparisons = {self.compare}, Swaps = {self.swaps}", True, Color.WHITE)
+            self.__window.blit(text_surface, dest=(20, self.WINDOW_HEIGHT - 50))
+            
 
 
             text_surface_controls = font.render("Up/Down - Increase/decrease values, Left/Right - Cycle algorithms, R - New values, Space - Run algorithm", True, Color.WHITE)
