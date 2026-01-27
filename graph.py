@@ -25,10 +25,20 @@ class Graph():
         self.sorting_algorithm_generator = None # holds the current sorting algorithm to be executed once only
         self.current_bar = None
         self.is_sorting = False
+        self.is_sorted = False
         self.start_time = 0
         self.elapsed_time = 0
         self.compare = 0
         self.swaps = 0
+
+    def DrawAxisX(self):
+        pygame.draw.rect(self.__window, Color.WHITE, (self.xaxis_x, self.xaxis_y, self.xaxis_width, 2))
+        arrow_x = self.xaxis_x + self.xaxis_width
+        arrow_y = self.xaxis_y
+        offset = 3
+        size = 5
+        pygame.draw.polygon(self.__window, Color.WHITE, [(arrow_x, arrow_y), (arrow_x - size, arrow_y - size), (arrow_x - size, arrow_y + size)], 2)
+        pygame.draw.polygon(self.__window, Color.BLACK, [(arrow_x, arrow_y), (arrow_x - size + offset, arrow_y - size + offset), (arrow_x - size + offset, arrow_y + size - offset)], 2)
 
     def DrawBars(self):
         num_bars = len(Bar.bars)
@@ -38,14 +48,22 @@ class Graph():
                 color = Color.WHITE if i == self.current_bar else Color.GREEN
                 bar_height = (Bar.bars[i].val / Bar.max_val) * (self.WINDOW_HEIGHT - self.PADDING * 2)
                 pygame.draw.rect(self.__window, color, ((self.xaxis_x + self.BAR_EDGE_PADDING) + (i * bar_width), self.xaxis_y - bar_height, bar_width, bar_height))
-                
 
+    def DrawControlsText(self, font):
+        text_surface_controls = font.render("Up/Down - Increase/decrease values, Left/Right - Cycle algorithms, R - New values, Space - Run algorithm, Esc - Close", True, Color.WHITE)
+        self.__window.blit(text_surface_controls, dest=((self.WINDOW_WIDTH - text_surface_controls.get_width()) // 2, 50))
+
+    def ResetStats(self):
+        self.start_time = time.time()
+        self.elapsed_time = 0
+        self.compare = 0
+        self.swaps = 0
 
     def Run(self):
         pygame.init()
         pygame.font.init()
-
         pygame.display.set_caption("Algorithm Visualizer")
+        font = pygame.font.SysFont('Comic Sans MS', 30)
 
         clock = pygame.time.Clock()
         running = True
@@ -57,39 +75,40 @@ class Graph():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r and not self.is_sorting:
                         dataGenerator.DataGenerator.GenerateDataSet(self.num_values)
+                        self.is_sorted = False
                     elif event.key == pygame.K_RIGHT and not self.is_sorting:
                         self.sorting_algorithm_index += 1
                         if self.sorting_algorithm_index >= len(algorithms.Algorithm.algorithms):
                             self.sorting_algorithm_index = 0
                         self.sorting_algorithm = algorithms.Algorithm.algorithms[self.sorting_algorithm_index]
+                        self.ResetStats()
                     elif event.key == pygame.K_LEFT and not self.is_sorting:
                         self.sorting_algorithm_index -= 1
                         if self.sorting_algorithm_index < 0:
                             self.sorting_algorithm_index = len(algorithms.Algorithm.algorithms) - 1
                         self.sorting_algorithm = algorithms.Algorithm.algorithms[self.sorting_algorithm_index]
-                    elif event.key == pygame.K_SPACE and not self.is_sorting:
+                        self.ResetStats()
+                    elif event.key == pygame.K_SPACE and not self.is_sorting and not self.is_sorted:
                         self.is_sorting = True
                         self.sorting_algorithm_generator = self.sorting_algorithm()
-                        self.start_time = time.time()
-                        self.elapsed_time = 0
-                        self.compare = 0
-                        self.swaps = 0
+                        self.ResetStats()
                     elif event.key == pygame.K_UP and not self.is_sorting:
                         self.num_values += self.VALUES_STEP
                         if self.num_values > self.MAX_VALUES:
                             self.num_values = self.MAX_VALUES
                         dataGenerator.DataGenerator.GenerateDataSet(self.num_values)
+                        self.is_sorted = False
                     elif event.key == pygame.K_DOWN and not self.is_sorting:
                         self.num_values -= self.VALUES_STEP
                         if self.num_values < self.MIN_VALUES:
                             self.num_values = self.MIN_VALUES
                         dataGenerator.DataGenerator.GenerateDataSet(self.num_values)
+                        self.is_sorted = False
+                    elif event.key == pygame.K_ESCAPE:
+                        running = False
                     
-
             self.__window.fill(Color.BLACK)
-            font = pygame.font.SysFont('Comic Sans MS', 30)
-            
-            xaxis = pygame.draw.rect(self.__window, Color.WHITE, (self.xaxis_x, self.xaxis_y, self.xaxis_width, 2))
+            self.DrawAxisX()
 
             try:
                 if self.is_sorting:
@@ -99,15 +118,12 @@ class Graph():
             except StopIteration:
                 self.current_bar = None
                 self.is_sorting = False
+                self.is_sorted = True
                 self.sorting_algorithm_generator = None
             text_surface = font.render(f"{self.sorting_algorithm.__name__} - Time elapsed:  {self.elapsed_time:.2f}s, Comparisons = {self.compare}, Swaps = {self.swaps}", True, Color.WHITE)
             self.__window.blit(text_surface, dest=(20, self.WINDOW_HEIGHT - 50))
             
-
-
-            text_surface_controls = font.render("Up/Down - Increase/decrease values, Left/Right - Cycle algorithms, R - New values, Space - Run algorithm", True, Color.WHITE)
-            self.__window.blit(text_surface_controls, dest=((self.WINDOW_WIDTH - text_surface_controls.get_width()) // 2, 50))
-
+            self.DrawControlsText(font)
             self.DrawBars()
             clock.tick(self.MAX_FPS)
             pygame.display.update()
