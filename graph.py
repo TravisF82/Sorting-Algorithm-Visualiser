@@ -42,13 +42,13 @@ class Graph():
 
     def DrawBars(self):
         num_bars = len(Bar.bars)
-        bar_width = (self.WINDOW_WIDTH - (self.BAR_EDGE_PADDING * 2) - (self.PADDING * 2)) // num_bars
+        bar_width = (self.WINDOW_WIDTH - (self.BAR_EDGE_PADDING * 2) - (self.PADDING * 2) - (num_bars - 1)) / num_bars
         for i in range(num_bars):
             if Bar.max_val > 0:
                 gap_offset = 1
                 color = Color.WHITE if i == self.current_bar else Color.GREEN
                 bar_height = (Bar.bars[i].val / Bar.max_val) * (self.WINDOW_HEIGHT - self.PADDING * 2)
-                pygame.draw.rect(self.__window, color, ((self.xaxis_x + self.BAR_EDGE_PADDING) + (i * bar_width) + (i * gap_offset), self.xaxis_y - bar_height, bar_width, bar_height))
+                pygame.draw.rect(self.__window, color, ((self.xaxis_x + self.BAR_EDGE_PADDING) + (i * bar_width) + (i * gap_offset), self.xaxis_y - bar_height, int(bar_width), bar_height))
 
     def DrawControlsText(self, font):
         text_surface_controls = font.render("Up/Down - Increase/decrease values, Left/Right - Cycle algorithms, R - New values, Space - Run algorithm, Esc - Close", True, Color.WHITE)
@@ -80,6 +80,7 @@ class Graph():
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption("Algorithm Visualizer")
+        pygame.display.set_icon(pygame.image.load("graph-icon.png"))
         font = pygame.font.SysFont('Comic Sans MS', 30)
 
         clock = pygame.time.Clock()
