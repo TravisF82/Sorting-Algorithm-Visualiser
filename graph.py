@@ -30,6 +30,13 @@ class Graph():
         self.elapsed_time = 0
         self.compare = 0
         self.swaps = 0
+        dataGenerator.DataGenerator.GenerateDataSet(self.num_values)
+
+    def InitialiseWindow():
+        pygame.init()
+        pygame.font.init()
+        pygame.display.set_caption("Algorithm Visualizer")
+        pygame.display.set_icon(pygame.image.load("graph-icon.png"))
 
     def DrawAxisX(self):
         pygame.draw.rect(self.__window, Color.WHITE, (self.xaxis_x, self.xaxis_y, self.xaxis_width, 2))
@@ -77,10 +84,7 @@ class Graph():
             self.sorting_algorithm_generator = None
 
     def Run(self):
-        pygame.init()
-        pygame.font.init()
-        pygame.display.set_caption("Algorithm Visualizer")
-        pygame.display.set_icon(pygame.image.load("graph-icon.png"))
+        self.InitialiseWindow()
         font = pygame.font.SysFont('Comic Sans MS', 30)
 
         clock = pygame.time.Clock()
@@ -127,7 +131,6 @@ class Graph():
                     
             self.__window.fill(Color.BLACK)
             self.DrawAxisX()
-
             self.Sort()
             self.DrawControlsText(font)
             self.DrawStats(font)
